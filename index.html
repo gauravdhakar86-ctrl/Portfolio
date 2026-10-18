@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Gaurav Dhakar | Spatial UI Portfolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    :root {
+      --glass-surface: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.18) 0%,
+        rgba(30, 41, 59, 0.48) 52%,
+        rgba(15, 23, 42, 0.65) 100%
+      );
+      --glass-border: rgba(255, 255, 255, 0.28);
+      --specular-rim: inset 0 1.5px 2px rgba(255, 255, 255, 0.7), inset 0 -1px 3px rgba(255, 255, 255, 0.15);
+      --fluid-title: clamp(1.75rem, 4vw + 1rem, 3.25rem);
+      --fluid-body: clamp(0.875rem, 0.5vw + 0.75rem, 1.05rem);
+    }
+
+    * {
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: var(--fluid-body);
+      color: #f8fafc;
+      background-color: #030712;
+      perspective: 1800px;
+      transition: background 0.7s ease;
+    }
+
+    /* Ambient environment backgrounds */
+    body[data-env="aurora"] {
+      background-image: 
+        radial-gradient(circle at 15% 18%, rgba(56, 189, 248, 0.38) 0%, transparent 45%),
+        radial-gradient(circle at 85% 22%, rgba(168, 85, 247, 0.36) 0%, transparent 50%),
+        radial-gradient(circle at 50% 85%, rgba(16, 185, 129, 0.28) 0%, transparent 55%),
+        radial-gradient(circle at 50% 45%, rgba(30, 58, 138, 0.45) 0%, #02040a 100%);
+      background-attachment: fixed;
+    }
+
+    body[data-env="nebula"] {
+      background-image: 
+        radial-gradient(circle at 20% 20%, rgba(236, 72, 153, 0.42) 0%, transparent 45%),
+        radial-gradient(circle at 80% 30%, rgba(99, 102, 241, 0.45) 0%, transparent 50%),
+        radial-gradient(circle at 45% 80%, rgba(14, 165, 233, 0.32) 0%, transparent 55%),
+        linear-gradient(180deg, #100626 0%, #03050d 100%);
+      background-attachment: fixed;
+    }
+
+    body[data-env="alpine"] {
+      background-image: 
+        radial-gradient(circle at 25% 15%, rgba(251, 191, 36, 0.28) 0%, transparent 45%),
+        radial-gradient(circle at 80% 35%, rgba(16, 185, 129, 0.34) 0%, transparent 50%),
+        radial-gradient(circle at 40% 85%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+        linear-gradient(180deg, #0b1c2c 0%, #030910 100%);
+      background-attachment: fixed;
+    }
+
+    body[data-env="lunar"] {
+      background-image: 
+        radial-gradient(circle at 50% 10%, rgba(226, 232, 240, 0.28) 0%, transparent 50%),
+        radial-gradient(circle at 20% 70%, rgba(71, 85, 105, 0.38) 0%, transparent 50%),
+        linear-gradient(180deg, #0f172a 0%, #020617 100%);
+      background-attachment: fixed;
+    }
+
+    .ambient-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(85px);
+      opacity: 0.45;
+      pointer-events: none;
+      z-index: -1;
+      animation: spatialDrift 16s infinite alternate ease-in-out;
+    }
+
+    @keyframes spatialDrift {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(35px, -25px, 0) scale(1.08); }
+      100% { transform: translate3d(-25px, 30px, 0) scale(0.95); }
+    }
+
+    /* Spatial Window Component with Mobile-First Fluid Base */
+    .spatial-window {
+      background: var(--glass-surface);
+      backdrop-filter: blur(44px) saturate(200%);
+      -webkit-backdrop-filter: blur(44px) saturate(200%);
+      border-radius: 1.75rem;
+      border: 1px solid var(--glass-border);
+      box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.7),
+        0 0 30px rgba(56, 189, 248, 0.06),
+        var(--specular-rim);
+      transform-style: preserve-3d;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .spatial-window::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        500px circle at var(--mouse-x, 50%) var(--mouse-y, 20%),
+        rgba(255, 255, 255, 0.15),
+        transparent 45%
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .spatial-window > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .spatial-subpanel {
+      background: rgba(15, 23, 42, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 1.25rem;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45), 0 1px 1px rgba(255, 255, 255, 0.15);
+      transition: all 0.25s ease;
+    }
+
+    .spatial-subpanel:hover {
+      background: rgba(30, 41, 59, 0.55);
+      border-color: rgba(125, 211, 252, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .spatial-pill {
+      background: rgba(255, 255, 255, 0.13);
+      border: 1px solid rgba(255, 255, 255, 0.26);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+      color: #f8fafc;
+      border-radius: 9999px;
+      backdrop-filter: blur(12px);
+      transition: all 0.22s ease;
+    }
+
+    .spatial-pill:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.6);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 10px 24px rgba(56, 189, 248, 0.3), inset 0 1px 2px #ffffff;
+    }
+
+    .spatial-btn {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.14) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.85);
+      color: #ffffff;
+      border-radius: 9999px;
+      backdrop-filter: blur(20px);
+      transition: all 0.25s ease;
+    }
+
+    .spatial-btn:hover {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.22) 100%);
+      box-shadow: 0 0 28px rgba(56, 189, 248, 0.6), inset 0 1px 2px #ffffff;
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .spatial-avatar {
+      border: 2.5px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.35), inset 0 0 15px rgba(255, 255, 255, 0.5);
+      background: #ffffff;
+      aspect-ratio: 1 / 1;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .gaurav-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      max-width: 100%;
+    }
+
+    .heatmap-scroll::-webkit-scrollbar {
+      height: 5px;
+    }
+    .heatmap-scroll::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 9999px;
+    }
+    .heatmap-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.22);
+      border-radius: 9999px;
+    }
+
+    /* Standard Responsive Breakpoints via Rem Units */
+    @media (min-width: 40rem) { /* Tablets */
+      .spatial-window {
+        border-radius: 2.25rem;
+      }
+    }
+
+    @media (min-width: 64rem) { /* Laptops & Small Desktops */
+      .spatial-window {
+        border-radius: 2.5rem;
+      }
+    }
+
+    @media (min-width: 80rem) { /* Large Desktops */
+      .spatial-window {
+        border-radius: 2.75rem;
+      }
+    }
+
+    /* Works gallery */
+    .work-card { overflow: hidden; }
+    .work-image-wrap { position: relative; overflow: hidden; background: rgba(2,6,23,.75); }
+    .work-image { display:block; width:100%; aspect-ratio: 16 / 10; object-fit: cover; cursor: zoom-in; transition: transform .35s ease, opacity .35s ease; }
+    .work-card:hover .work-image { transform: scale(1.035); opacity: .92; }
+    .work-open { position:absolute; right:12px; bottom:12px; background:rgba(2,6,23,.82); border:1px solid rgba(255,255,255,.25); border-radius:999px; padding:8px 11px; color:#fff; font-size:11px; }
+    .work-lightbox { position:fixed; inset:0; z-index:1000; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(2,6,23,.92); backdrop-filter:blur(12px); }
+    .work-lightbox.open { display:flex; }
+    .work-lightbox img { max-width:min(1200px, 96vw); max-height:82vh; object-fit:contain; border-radius:14px; box-shadow:0 20px 70px rgba(0,0,0,.6); }
+    .work-lightbox-close { position:absolute; top:18px; right:22px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.35); background:rgba(255,255,255,.12); color:white; font-size:26px; cursor:pointer; }
+
+  </style>
+
+  <script>
+    // High-definition permanent portrait SVG fallback for Gaurav Dhakar
+    const GAURAV_PERMANENT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+      <defs>
+        <linearGradient id="studioBg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#f4f6f9"/>
+        </linearGradient>
+        <linearGradient id="navyBlazer" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#1d2432"/><stop offset="50%" stop-color="#151b26"/><stop offset="100%" stop-color="#0e121a"/>
+        </linearGradient>
+        <linearGradient id="faceSkin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#e0a57c"/><stop offset="55%" stop-color="#d4936a"/><stop offset="100%" stop-color="#be7d56"/>
+        </linearGradient>
+        <linearGradient id="frameCrystal" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="rgba(245, 222, 214, 0.78)"/><stop offset="50%" stop-color="rgba(228, 198, 188, 0.65)"/><stop offset="100%" stop-color="rgba(205, 170, 160, 0.75)"/>
+        </linearGradient>
+      </defs>
+      <rect width="500" height="500" fill="url(#studioBg)"/>
+      <path d="M196 295 L196 395 L304 395 L304 295 Z" fill="#b97850"/>
+      <path d="M196 295 Q250 335 304 295 L304 335 Q250 365 196 335 Z" fill="rgba(0,0,0,0.16)"/>
+      <path d="M25 500 C35 390 115 352 192 342 L250 475 L308 342 C385 352 465 390 475 500 Z" fill="url(#navyBlazer)"/>
+      <path d="M192 342 L250 485 L308 342 L296 325 L250 412 L204 325 Z" fill="#ffffff"/>
+      <path d="M238 408 L250 485 L262 408 Z" fill="#f1f5f9"/>
+      <circle cx="248" cy="442" r="4.5" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+      <path d="M195 322 L232 396 L204 415 L184 345 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2"/>
+      <path d="M305 322 L268 396 L296 415 L316 345 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2"/>
+      <path d="M190 340 L158 415 L218 500 L246 475 Z" fill="#141923" stroke="#283142" stroke-width="1.2"/>
+      <path d="M310 340 L342 415 L282 500 L254 475 Z" fill="#141923" stroke="#283142" stroke-width="1.2"/>
+      <ellipse cx="152" cy="228" rx="14" ry="30" fill="#c5845c"/><ellipse cx="348" cy="228" rx="14" ry="30" fill="#c5845c"/>
+      <path d="M156 172 C156 104 344 104 344 172 C350 262 325 330 250 334 C175 330 150 262 156 172 Z" fill="url(#faceSkin)"/>
+      <ellipse cx="204" cy="196" rx="16" ry="8.5" fill="#ffffff"/><circle cx="204" cy="196" r="7" fill="#231710"/><circle cx="202" cy="194" r="2.2" fill="#ffffff"/>
+      <ellipse cx="296" cy="196" rx="16" ry="8.5" fill="#ffffff"/><circle cx="296" cy="196" r="7" fill="#231710"/><circle cx="294" cy="194" r="2.2" fill="#ffffff"/>
+      <rect x="164" y="170" width="76" height="52" rx="12" fill="rgba(255,255,255,0.12)" stroke="url(#frameCrystal)" stroke-width="5.5"/>
+      <rect x="260" y="170" width="76" height="52" rx="12" fill="rgba(255,255,255,0.12)" stroke="url(#frameCrystal)" stroke-width="5.5"/>
+      <path d="M153 190 C145 125 175 72 252 72 C325 72 355 122 347 190 C342 148 322 122 250 118 C184 120 160 148 153 190 Z" fill="#141417"/>
+    </svg>`;
+
+    window.PERMANENT_PORTRAIT_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(GAURAV_PERMANENT_SVG);
+
+    function handlePhotoFallback(imgEl) {
+      try {
+        const savedRealPhoto = localStorage.getItem('gaurav_permanent_real_photo_v1');
+        if (savedRealPhoto && imgEl.src !== savedRealPhoto) {
+          imgEl.src = savedRealPhoto;
+          return;
+        }
+      } catch (e) {}
+
+      if (!imgEl.dataset.triedAlt) {
+        imgEl.dataset.triedAlt = '1';
+        imgEl.src = 'WhatsApp Image 2026-10-11 at 7.32.22 AM.jpeg';
+      } else {
+        imgEl.onerror = null;
+        imgEl.src = window.PERMANENT_PORTRAIT_URI;
+      }
+    }
+
+    function applyAndSaveRealPhoto(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const tempImg = new Image();
+        tempImg.onload = function() {
+          const canvas = document.createElement('canvas');
+          const maxSize = 600;
+          let w = tempImg.width;
+          let h = tempImg.height;
+          if (w > h && w > maxSize) {
+            h = Math.round((h * maxSize) / w); w = maxSize;
+          } else if (h >= w && h > maxSize) {
+            w = Math.round((w * maxSize) / h); h = maxSize;
+          }
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(tempImg, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+          const mainPhoto = document.getElementById('main-profile-photo');
+          if (mainPhoto) {
+            mainPhoto.onerror = null;
+            mainPhoto.src = dataUrl;
+          }
+          try {
+            localStorage.setItem('gaurav_permanent_real_photo_v1', dataUrl);
+          } catch (err) {}
+        };
+        tempImg.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleRealPhotoSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      if (file) applyAndSaveRealPhoto(file);
+    }
+
+    function renderLeetCodeHeatmap() {
+      const container = document.getElementById('lc-heatmap-months');
+      if (!container) return;
+      
+      const monthsData = [
+        { name: 'Oct', days: 31, activeSet: [20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+        { name: 'Nov', days: 30, activeSet: [] },
+        { name: 'Dec', days: 31, activeSet: [] },
+        { name: 'Jan', days: 31, activeSet: [] },
+        { name: 'Feb', days: 28, activeSet: [] },
+        { name: 'Mar', days: 31, activeSet: [] },
+        { name: 'Apr', days: 30, activeSet: [] },
+        { name: 'May', days: 31, activeSet: [] },
+        { name: 'Jun', days: 30, activeSet: [] },
+        { name: 'Jul', days: 31, activeSet: [] },
+        { name: 'Aug', days: 31, activeSet: [] },
+        { name: 'Sep', days: 30, activeSet: [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] }
+      ];
+
+      let html = '';
+      monthsData.forEach(m => {
+        html += `<div class="flex flex-col items-center gap-1.5">
+          <div class="grid grid-rows-7 grid-flow-col gap-[3px]">`;
+        
+        for (let d = 1; d <= m.days; d++) {
+          let isActive = m.activeSet.includes(d);
+          let bgClass = "bg-[#383838] hover:bg-[#555]";
+          let countText = "0 submissions";
+          
+          if (isActive) {
+            if (d % 3 === 0) {
+              bgClass = "bg-[#2cbb5d] hover:bg-[#7fe884]";
+              countText = "3 submissions";
+            } else if (d % 2 === 0) {
+              bgClass = "bg-[#1f9d3a] hover:bg-[#2cbb5d]";
+              countText = "2 submissions";
+            } else {
+              bgClass = "bg-[#0e5a23] hover:bg-[#1f9d3a]";
+              countText = "1 submission";
+            }
+          }
+
+          html += `<div class="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[2.5px] ${bgClass} transition-colors cursor-pointer" title="${m.name} ${d}: ${countText}" onmouseenter="document.getElementById('lc-cell-tooltip').innerHTML='<i class=\\'fa-solid fa-fire text-amber-400 mr-1\\'></i>${m.name} ${d}: ${countText} (Verified Streak)'"></div>`;
+        }
+        
+        html += `</div>
+          <span class="text-[10px] sm:text-[11px] text-[#9fa1a6] font-mono mt-1">${m.name}</span>
+        </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function syncLeetCodeDashboard() {
+      const usernameInput = document.getElementById('lc-username-input');
+      const username = usernameInput ? usernameInput.value.trim() : 'AURA437';
+      const syncIcon = document.getElementById('lc-sync-icon');
+      if (syncIcon) syncIcon.classList.add('fa-spin');
+
+      setTimeout(() => {
+        if (syncIcon) syncIcon.classList.remove('fa-spin');
+        const displayUser = document.getElementById('lc-display-user');
+        if (displayUser) displayUser.textContent = `leetcode.com/u/${username}`;
+        const profileLink = document.getElementById('lc-profile-link');
+        if (profileLink) profileLink.href = `https://leetcode.com/u/${username}/`;
+        const rankingText = document.getElementById('lc-ranking-text');
+        if (rankingText) rankingText.textContent = `@${username} • Active Streak Verified`;
+        const lastUpdated = document.getElementById('lc-last-updated');
+        if (lastUpdated) lastUpdated.textContent = `Synced successfully with @${username}`;
+      }, 700);
+    }
+
+    function autoCycleSpatialEnvironment() {
+      const environments = ['aurora', 'nebula', 'alpine', 'lunar'];
+      let nextIndex = 0;
+      try {
+        const lastIndex = parseInt(sessionStorage.getItem('gaurav_spatial_env_idx') || '-1', 10);
+        nextIndex = (lastIndex + 1) % environments.length;
+        sessionStorage.setItem('gaurav_spatial_env_idx', String(nextIndex));
+      } catch (e) {
+        nextIndex = Math.floor(Math.random() * environments.length);
+      }
+      document.body.setAttribute('data-env', environments[nextIndex]);
+    }
+  </script>
+</head>
+<body data-env="aurora" class="pb-12 sm:pb-20 selection:bg-sky-400 selection:text-slate-950">
+
+  <div class="ambient-orb w-72 h-72 sm:w-96 sm:h-96 bg-sky-500 top-6 -left-20"></div>
+  <div class="ambient-orb w-80 h-80 sm:w-[30rem] sm:h-[30rem] bg-purple-600 top-1/3 -right-24" style="animation-delay: -5s;"></div>
+  <div class="ambient-orb w-72 h-72 sm:w-80 sm:h-80 bg-emerald-500 bottom-10 left-1/4" style="animation-delay: -9s;"></div>
+
+  <main class="w-full max-w-[80rem] mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 space-y-6 sm:space-y-8">
+
+    <!-- 1. PROFILE WINDOW -->
+    <section id="profile-window" class="spatial-window p-5 sm:p-10">
+      <div class="flex flex-col md:flex-row items-center md:items-start gap-6 sm:gap-8">
+        
+        <!-- Interactive Permanent 3D Floating Portrait Frame -->
+        <div class="flex flex-col items-center shrink-0">
+          <input type="file" id="permanent-photo-input" accept="image/*" class="hidden" onchange="handleRealPhotoSelect(event)" />
+          <div 
+            onclick="document.getElementById('permanent-photo-input').click()"
+            title="Click to Upload Your Photo (52007.png)"
+            class="spatial-avatar group w-36 h-36 sm:w-48 sm:h-48 rounded-[30px] sm:rounded-[36px] overflow-hidden flex items-center justify-center relative cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
+          >
+            <img 
+              id="main-profile-photo"
+              src="WhatsApp Image 2026-10-11 at 7.32.22 AM.jpeg" 
+              alt="Gaurav Dhakar" 
+              class="gaurav-photo select-none"
+              onerror="handlePhotoFallback(this)"
+            />
+            <div id="photo-hover-hint" class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-center p-3">
+              <i class="fa-solid fa-camera text-sky-300 text-xl mb-1.5"></i>
+              <span class="text-[11px] font-semibold text-white leading-tight">Click to Upload Photo</span>
+              <span class="text-[9px] text-sky-200 mt-0.5">Saves Permanently</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bio, Headline & Direct Contact Pills -->
+        <div class="flex-1 text-center md:text-left w-full">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-400/15 border border-sky-300/35 text-sky-200 text-[10px] sm:text-xs font-semibold tracking-wider uppercase mb-3 shadow-inner">
+            <i class="fa-solid fa-cloud"></i>
+            <span>CLOUD SUPPORT | NETWORK SUPPORT | IT SUPPORT</span>
+          </div>
+
+          <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white drop-shadow">
+            Gaurav Dhakar
+          </h1>
+
+          <p class="mt-1.5 sm:mt-2 text-xs sm:text-base font-medium text-sky-300">
+            MCA Student (AI & Data Science) • M.Sc. Mathematics • AWS & Networking Specialist
+          </p>
+
+          <p class="mt-3.5 sm:mt-4 text-xs sm:text-base leading-relaxed text-slate-200/95">
+            MCA student specializing in <strong class="text-white font-semibold">Artificial Intelligence and Data Science</strong>, with a postgraduate background in <strong class="text-white font-semibold">Mathematics</strong> and practical lab experience in <strong class="text-white font-semibold">AWS EC2, Linux-based web hosting, and networking fundamentals</strong>. Brings analytical thinking, a structured approach to troubleshooting, and a strong willingness to learn. Aspiring Cloud and IT Professional with a strong interest in AWS Cloud Computing, Networking, and IT Infrastructure.
+          </p>
+
+          <div class="mt-5 sm:mt-6 flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+            <span class="spatial-pill px-3.5 py-2 text-xs font-medium inline-flex items-center gap-2">
+              <i class="fa-solid fa-location-dot text-sky-300"></i>
+              <span>Gwalior, Madhya Pradesh, India</span>
+            </span>
+
+            <a href="tel:+917566917313" class="spatial-pill px-3.5 py-2 text-xs font-medium inline-flex items-center gap-2">
+              <i class="fa-solid fa-phone text-emerald-300"></i>
+              <span>+91 75669 17313</span>
+            </a>
+
+            <a href="mailto:gauravdhakar86@gmail.com" class="spatial-pill px-3.5 py-2 text-xs font-medium inline-flex items-center gap-2 break-all">
+              <i class="fa-solid fa-envelope text-purple-300"></i>
+              <span>gauravdhakar86@gmail.com</span>
+            </a>
+
+            <a href="https://github.com/gauravdhakar86-ctrl" target="_blank" rel="noopener noreferrer" class="spatial-btn px-4 py-2 text-xs font-semibold inline-flex items-center gap-2">
+              <i class="fa-brands fa-github text-sm"></i>
+              <span>github.com/gauravdhakar86-ctrl</span>
+            </a>
+
+            <a href="https://leetcode.com/u/AURA437/" target="_blank" rel="noopener noreferrer" class="spatial-btn px-4 py-2 text-xs font-semibold inline-flex items-center gap-2">
+              <i class="fa-solid fa-code text-amber-300 text-sm"></i>
+              <span>leetcode.com/u/AURA437</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2-COL GRID FOR ROLES & SKILLS -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+      
+      <!-- 2. ROLES WINDOW -->
+      <section id="roles-window" class="spatial-window lg:col-span-5 p-6 sm:p-8 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2.5 text-white">
+              <i class="fa-solid fa-bullseye text-sky-300"></i>
+              <span>Target Roles</span>
+            </h2>
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-300/40 text-emerald-200 text-[11px] font-mono">
+              OPEN TO WORK
+            </span>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-300 mb-5">
+            Prepared for cloud support, network operations, and infrastructure engineering roles:
+          </p>
+
+          <div class="grid grid-cols-1 gap-2.5">
+            <div class="spatial-pill px-4 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-3">
+              <i class="fa-brands fa-aws text-amber-300 w-5 text-center"></i>
+              <span>Cloud Support Engineer</span>
+            </div>
+            <div class="spatial-pill px-4 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-3">
+              <i class="fa-solid fa-cloud-arrow-up text-sky-300 w-5 text-center"></i>
+              <span>AWS Cloud Support Associate</span>
+            </div>
+            <div class="spatial-pill px-4 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-3">
+              <i class="fa-solid fa-network-wired text-emerald-300 w-5 text-center"></i>
+              <span>Network Support Engineer</span>
+            </div>
+            <div class="spatial-pill px-4 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-3">
+              <i class="fa-solid fa-headset text-purple-300 w-5 text-center"></i>
+              <span>IT Support Engineer</span>
+            </div>
+            <div class="spatial-pill px-4 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-3">
+              <i class="fa-solid fa-tower-broadcast text-pink-300 w-5 text-center"></i>
+              <span>NOC Engineer Trainee</span>
+            </div>
+            <div class="spatial-pill px-4 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-3">
+              <i class="fa-solid fa-server text-indigo-300 w-5 text-center"></i>
+              <span>Junior System Administrator</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. SKILLS WINDOW -->
+      <section id="skills-window" class="spatial-window lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2.5 text-white">
+              <i class="fa-solid fa-microchip text-sky-300"></i>
+              <span>Technical Skills</span>
+            </h2>
+            <span class="text-xs font-mono text-sky-200/80">3 CORE DOMAINS</span>
+          </div>
+
+          <div class="space-y-5">
+            <div class="spatial-subpanel p-4">
+              <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-sky-300 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-ethernet"></i>
+                Networking & Connectivity
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                <span class="spatial-pill px-3 py-1 text-xs">OSI & TCP/IP Models</span>
+                <span class="spatial-pill px-3 py-1 text-xs">IPv4 Addressing & Subnetting</span>
+                <span class="spatial-pill px-3 py-1 text-xs">DHCP (DORA)</span>
+                <span class="spatial-pill px-3 py-1 text-xs">DNS</span>
+                <span class="spatial-pill px-3 py-1 text-xs">Router & Switch Fundamentals</span>
+                <span class="spatial-pill px-3 py-1 text-xs">Telnet</span>
+                <span class="spatial-pill px-3 py-1 text-xs">Network Troubleshooting</span>
+              </div>
+            </div>
+
+            <div class="spatial-subpanel p-4">
+              <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-300 mb-3 flex items-center gap-2">
+                <i class="fa-brands fa-aws"></i>
+                Cloud & Systems
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                <span class="spatial-pill px-3 py-1 text-xs">AWS EC2</span>
+                <span class="spatial-pill px-3 py-1 text-xs">SSH / PuTTY</span>
+                <span class="spatial-pill px-3 py-1 text-xs">Linux Server Basics</span>
+                <span class="spatial-pill px-3 py-1 text-xs">HTTPD / Apache Web Server</span>
+                <span class="spatial-pill px-3 py-1 text-xs">Website Hosting</span>
+                <span class="spatial-pill px-3 py-1 text-xs">AWS Target Groups</span>
+                <span class="spatial-pill px-3 py-1 text-xs">Elastic Load Balancing (ELB)</span>
+              </div>
+            </div>
+
+            <div class="spatial-subpanel p-4">
+              <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-purple-300 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-square-root-variable"></i>
+                Programming & Core Knowledge
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                <span class="spatial-pill px-3 py-1 text-xs">Python (Basic)</span>
+                <span class="spatial-pill px-3 py-1 text-xs">C++ (Basic)</span>
+                <span class="spatial-pill px-3 py-1 text-xs">Machine Learning Fundamentals</span>
+                <span class="spatial-pill px-3 py-1 text-xs">Mathematics</span>
+                <span class="spatial-pill px-3 py-1 text-xs">Logical Reasoning</span>
+                <span class="spatial-pill px-3 py-1 text-xs">Analytical Problem-Solving</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 4. LABS WINDOW -->
+    <section id="labs-window" class="spatial-window p-6 sm:p-8">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
+        <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2.5 text-white">
+          <i class="fa-solid fa-flask text-sky-300"></i>
+          <span>Projects & Practical Labs</span>
+        </h2>
+        <span class="text-xs font-mono text-sky-200/80">HANDS-ON CLOUD & NETWORKING</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="spatial-subpanel p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-300/40 flex items-center justify-center text-amber-300 text-lg">
+                <i class="fa-brands fa-aws"></i>
+              </span>
+              <span class="spatial-pill px-2.5 py-0.5 text-[11px] font-mono">Cloud Hosting</span>
+            </div>
+            <h3 class="font-bold text-base sm:text-lg text-white mb-2">
+              AWS EC2 Web Server Deployment
+            </h3>
+            <ul class="list-disc list-inside text-xs sm:text-sm space-y-2 text-slate-200/90">
+              <li>Launched and configured an Amazon EC2 instance and accessed the server remotely using SSH/PuTTY.</li>
+              <li>Configured HTTPD/Apache and hosted a personal portfolio website, gaining practical exposure to cloud-based web hosting.</li>
+            </ul>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/10 flex flex-wrap gap-1.5">
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px]">AWS EC2</span>
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px]">Linux</span>
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px]">SSH/PuTTY</span>
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px]">HTTPD/Apache</span>
+          </div>
+        </div>
+
+        <div class="spatial-subpanel p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="w-10 h-10 rounded-2xl bg-sky-400/20 border border-sky-300/40 flex items-center justify-center text-sky-300 text-lg">
+                <i class="fa-solid fa-route"></i>
+              </span>
+              <span class="spatial-pill px-2.5 py-0.5 text-[11px] font-mono">DORA Sequence</span>
+            </div>
+            <h3 class="font-bold text-base sm:text-lg text-white mb-2">
+              DHCP Configuration & Network Fundamentals
+            </h3>
+            <ul class="list-disc list-inside text-xs sm:text-sm space-y-2 text-slate-200/90">
+              <li>Practiced DHCP concepts and IP address assignment; reviewed basic network connectivity and troubleshooting steps.</li>
+              <li>Learned the <strong class="text-white">DORA sequence — Discover, Offer, Request, Acknowledge</strong> and its role in dynamic IP configuration.</li>
+            </ul>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/10 flex flex-wrap gap-1.5">
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px]">DHCP</span>
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px]">IP Addressing</span>
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px]">Networking Fundamentals</span>
+          </div>
+        </div>
+
+        <div class="spatial-subpanel p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="w-10 h-10 rounded-2xl bg-purple-400/20 border border-purple-300/40 flex items-center justify-center text-purple-300 text-lg">
+                <i class="fa-solid fa-scale-balanced"></i>
+              </span>
+              <span class="spatial-pill px-2.5 py-0.5 text-[11px] font-mono">Traffic Distribution</span>
+            </div>
+            <h3 class="font-bold text-base sm:text-lg text-white mb-2">
+              AWS Target Group & Load Balancer Lab
+            </h3>
+            <ul class="list-disc list-inside text-xs sm:text-sm space-y-2 text-slate-200/90">
+              <li>Practiced target group and load-balancer concepts, including how incoming traffic can be distributed across registered targets.</li>
+            </ul>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/10 flex flex-wrap gap-1.5">
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px]">AWS Target Groups</span>
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px]">Elastic Load Balancing (Lab)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- WORKS IMAGE GALLERY -->
+    <section id="works-gallery" class="spatial-window p-6 sm:p-8">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2.5 text-white">
+          <i class="fa-solid fa-images text-sky-300"></i>
+          <span>Works & Project Gallery</span>
+        </h2>
+        <span class="text-xs font-mono text-sky-200/80">REAL LAB SCREENSHOTS</span>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-300 mb-6">
+        A visual showcase of my hands-on networking labs and AWS cloud practice. Select any image to view it in full size.
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <article class="spatial-subpanel work-card">
+          <div class="work-image-wrap">
+            <img class="work-image" src="images/works/dhcp-packet-tracer.png" alt="Cisco Packet Tracer DHCP network with a router, switch, and four PCs" loading="lazy" onclick="openWorkImage(this)">
+            <button class="work-open" type="button" onclick="openWorkImage(this.previousElementSibling)"><i class="fa-solid fa-expand mr-1"></i> View image</button>
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold text-base text-white mb-1">DHCP Configuration Lab</h3>
+            <p class="text-xs sm:text-sm text-slate-300">A router-and-switch LAN with multiple PCs, used to practise IP addressing and DHCP behaviour in Packet Tracer.</p>
+            <div class="mt-3 flex flex-wrap gap-1.5"><span class="spatial-pill px-2.5 py-0.5 text-[11px]">Cisco Packet Tracer</span><span class="spatial-pill px-2.5 py-0.5 text-[11px]">DHCP</span><span class="spatial-pill px-2.5 py-0.5 text-[11px]">LAN</span></div>
+          </div>
+        </article>
+
+        <article class="spatial-subpanel work-card">
+          <div class="work-image-wrap">
+            <img class="work-image" src="images/works/multi-router-topology.png" alt="Cisco Packet Tracer multi-router topology with three LANs" loading="lazy" onclick="openWorkImage(this)">
+            <button class="work-open" type="button" onclick="openWorkImage(this.previousElementSibling)"><i class="fa-solid fa-expand mr-1"></i> View image</button>
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold text-base text-white mb-1">Multi-Router Network Topology</h3>
+            <p class="text-xs sm:text-sm text-slate-300">A routed network connecting multiple LAN segments, with interface IP labels and end-device connectivity.</p>
+            <div class="mt-3 flex flex-wrap gap-1.5"><span class="spatial-pill px-2.5 py-0.5 text-[11px]">Routing</span><span class="spatial-pill px-2.5 py-0.5 text-[11px]">IPv4</span><span class="spatial-pill px-2.5 py-0.5 text-[11px]">Subnetting</span></div>
+          </div>
+        </article>
+
+        <article class="spatial-subpanel work-card">
+          <div class="work-image-wrap">
+            <img class="work-image" src="images/works/telnet-lab.png" alt="Cisco Packet Tracer Telnet lab showing a router, switch, and two PCs" loading="lazy" onclick="openWorkImage(this)">
+            <button class="work-open" type="button" onclick="openWorkImage(this.previousElementSibling)"><i class="fa-solid fa-expand mr-1"></i> View image</button>
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold text-base text-white mb-1">Telnet Remote Access Lab</h3>
+            <p class="text-xs sm:text-sm text-slate-300">A small LAN topology for practising remote device access and basic network administration concepts.</p>
+            <div class="mt-3 flex flex-wrap gap-1.5"><span class="spatial-pill px-2.5 py-0.5 text-[11px]">Telnet</span><span class="spatial-pill px-2.5 py-0.5 text-[11px]">Router</span><span class="spatial-pill px-2.5 py-0.5 text-[11px]">Switching</span></div>
+          </div>
+        </article>
+
+        <article class="spatial-subpanel work-card">
+          <div class="work-image-wrap">
+            <img class="work-image" src="images/works/network-topology-project.png" alt="Cisco Packet Tracer hierarchical multi-router network project" loading="lazy" onclick="openWorkImage(this)">
+            <button class="work-open" type="button" onclick="openWorkImage(this.previousElementSibling)"><i class="fa-solid fa-expand mr-1"></i> View image</button>
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold text-base text-white mb-1">Hierarchical Network Design</h3>
+            <p class="text-xs sm:text-sm text-slate-300">A multi-router design connecting separate access switches and client networks.</p>
+            <div class="mt-3 flex flex-wrap gap-1.5"><span class="spatial-pill px-2.5 py-0.5 text-[11px]">Network Design</span><span class="spatial-pill px-2.5 py-0.5 text-[11px]">Cisco IOS</span><span class="spatial-pill px-2.5 py-0.5 text-[11px]">LAN/WAN</span></div>
+          </div>
+        </article>
+
+        <article class="spatial-subpanel work-card">
+          <div class="work-image-wrap">
+            <img class="work-image" src="images/works/aws-ec2-configuration.png" alt="AWS EC2 launch instance network settings and security group configuration" loading="lazy" onclick="openWorkImage(this)">
+            <button class="work-open" type="button" onclick="openWorkImage(this.previousElementSibling)"><i class="fa-solid fa-expand mr-1"></i> View image</button>
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold text-base text-white mb-1">AWS EC2 Instance Setup</h3>
+            <p class="text-xs sm:text-sm text-slate-300">AWS Console configuration showing instance networking, public IP assignment, and web traffic security-group rules.</p>
+            <div class="mt-3 flex flex-wrap gap-1.5"><span class="spatial-pill px-2.5 py-0.5 text-[11px]">AWS EC2</span><span class="spatial-pill px-2.5 py-0.5 text-[11px]">VPC</span><span class="spatial-pill px-2.5 py-0.5 text-[11px]">Security Groups</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <div id="work-lightbox" class="work-lightbox" role="dialog" aria-modal="true" aria-label="Expanded project screenshot" onclick="if(event.target===this) closeWorkImage()">
+      <button class="work-lightbox-close" type="button" aria-label="Close image" onclick="closeWorkImage()">&times;</button>
+      <img id="work-lightbox-image" src="" alt="Expanded project screenshot">
+    </div>
+
+        <!-- 5. LEETCODE HEATMAP WINDOW -->
+    <section id="leetcode-window" class="spatial-window p-5 sm:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <span class="w-9 h-9 rounded-2xl bg-amber-400/20 border border-amber-300/40 flex items-center justify-center text-amber-300 shrink-0">
+              <i class="fa-solid fa-code"></i>
+            </span>
+            <h2 class="text-lg sm:text-2xl font-bold text-white">
+              LeetCode Activity & Submission Graph
+            </h2>
+            <span id="lc-sync-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-300/40 text-emerald-200 text-[10px] sm:text-[11px] font-mono inline-flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              LIVE SYNCED
+            </span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-300 mt-1.5">
+            Real-time problem-solving breakdown & 1-year submission consistency heatmap for <strong class="text-white font-mono">@AURA437</strong>
+          </p>
+        </div>
+
+        <div class="flex items-center justify-between sm:justify-start gap-2 bg-slate-950/50 p-1.5 rounded-full border border-white/20 w-full sm:w-auto">
+          <div class="flex items-center gap-1 pl-2.5">
+            <span class="text-xs text-slate-400 font-mono">@</span>
+            <input 
+              type="text" 
+              id="lc-username-input" 
+              value="AURA437"
+              placeholder="LeetCode Username" 
+              class="bg-transparent text-xs sm:text-sm text-white font-mono focus:outline-none w-28 sm:w-36"
+            />
+          </div>
+          <button onclick="syncLeetCodeDashboard()" class="spatial-btn px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 shrink-0">
+            <i id="lc-sync-icon" class="fa-solid fa-arrows-rotate text-sky-300"></i>
+            <span>Sync</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="space-y-5 sm:space-y-6">
+        <div class="spatial-subpanel p-4 sm:p-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-2">
+              <i class="fa-solid fa-chart-pie"></i>
+              Problem Solving Progress
+            </span>
+            <a id="lc-profile-link" href="https://leetcode.com/u/AURA437/" target="_blank" rel="noopener noreferrer" class="text-xs text-sky-300 hover:underline flex items-center gap-1.5 font-mono">
+              <span id="lc-display-user">leetcode.com/u/AURA437</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6 items-center">
+            <div class="md:col-span-4 flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-950/45 border border-white/10">
+              <div class="relative w-28 h-28 flex items-center justify-center">
+                <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"></circle>
+                  <circle id="lc-ring-progress" cx="50" cy="50" r="42" fill="none" stroke="#10b981" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="210" class="transition-all duration-1000"></circle>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <span id="lc-total-solved" class="text-2xl font-extrabold text-white font-mono">25</span>
+                  <span class="text-[10px] uppercase tracking-wider text-slate-300">Solved</span>
+                </div>
+              </div>
+              <span id="lc-ranking-text" class="mt-2 text-[11px] font-mono text-emerald-300">@AURA437 • Active Streak</span>
+            </div>
+
+            <div class="md:col-span-8 space-y-3.5">
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-semibold text-emerald-300">Easy</span>
+                  <span id="lc-easy-count" class="font-mono text-slate-200">18 / 830</span>
+                </div>
+                <div class="w-full h-2.5 rounded-full bg-white/10 overflow-hidden">
+                  <div id="lc-easy-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-700" style="width: 35%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-semibold text-amber-300">Medium</span>
+                  <span id="lc-medium-count" class="font-mono text-slate-200">6 / 1740</span>
+                </div>
+                <div class="w-full h-2.5 rounded-full bg-white/10 overflow-hidden">
+                  <div id="lc-medium-bar" class="h-full bg-amber-400 rounded-full transition-all duration-700" style="width: 18%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-semibold text-rose-300">Hard</span>
+                  <span id="lc-hard-count" class="font-mono text-slate-200">1 / 750</span>
+                </div>
+                <div class="w-full h-2.5 rounded-full bg-white/10 overflow-hidden">
+                  <div id="lc-hard-bar" class="h-full bg-rose-500 rounded-full transition-all duration-700" style="width: 8%"></div>
+                </div>
+              </div>
+
+              <div class="pt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300">
+                <span><i class="fa-solid fa-terminal text-emerald-400 mr-1.5"></i>Primary Languages: <strong class="text-white">Python, C++</strong></span>
+                <span id="lc-last-updated" class="font-mono text-[11px] text-slate-400">Synced with @AURA437</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-[18px] bg-[#222222]/95 border border-white/10 px-4 sm:px-6 py-4 sm:py-5 shadow-[0_20px_50px_rgba(0,0,0,0.65),inset_0_1px_1px_rgba(255,255,255,0.12)] backdrop-blur-2xl">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-5">
+            <div class="flex items-baseline gap-1.5">
+              <span id="lc-yearly-submissions" class="text-[18px] sm:text-[22px] font-bold text-white tracking-tight leading-none">37</span>
+              <span class="text-[13px] sm:text-[15px] text-[#9fa1a6] font-normal">submissions in the past one year</span>
+              <i class="fa-regular fa-circle-question text-[12px] sm:text-[13px] text-[#7a7c80] ml-1 self-center cursor-help" title="Verified 1-year LeetCode submission calendar for @AURA437"></i>
+            </div>
+
+            <div class="flex items-center gap-4 sm:gap-5 text-[11px] sm:text-[13px] text-[#9fa1a6]">
+              <span>Total active days: <strong id="lc-active-days" class="text-[#e5e7eb] font-semibold">25</strong></span>
+              <span>Max streak: <strong id="lc-max-streak" class="text-[#e5e7eb] font-semibold">25</strong></span>
+            </div>
+          </div>
+
+          <div class="heatmap-scroll overflow-x-auto pb-2 select-none -mx-1 px-1">
+            <div id="lc-heatmap-months" class="inline-flex items-start justify-between gap-[12px] sm:gap-[14px] min-w-[680px] sm:min-w-full py-1">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div class="mt-2.5 pt-2.5 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-[10px] sm:text-[11px] text-[#8a8c90]">
+            <span id="lc-cell-tooltip" class="font-mono text-emerald-400/90">
+              <i class="fa-solid fa-fire text-amber-400 mr-1"></i>25-day active streak in Sep – Oct • Tap or hover any square
+            </span>
+            <div class="flex items-center gap-1.5">
+              <span>Less</span>
+              <span class="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[2.5px] bg-[#383838] inline-block"></span>
+              <span class="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[2.5px] bg-[#0e5a23] inline-block"></span>
+              <span class="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[2.5px] bg-[#1f9d3a] inline-block"></span>
+              <span class="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[2.5px] bg-[#2cbb5d] inline-block"></span>
+              <span class="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[2.5px] bg-[#7fe884] inline-block"></span>
+              <span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. EDUCATION WINDOW -->
+    <section id="education-window" class="spatial-window p-5 sm:p-8">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
+        <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2.5 text-white">
+          <i class="fa-solid fa-graduation-cap text-sky-300"></i>
+          <span>Education</span>
+        </h2>
+        <span class="text-xs font-mono text-sky-200/80">ACADEMIC TIMELINE</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="spatial-subpanel p-5 flex flex-col justify-between">
+          <div>
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px] font-mono inline-block mb-3 text-sky-200">
+              Pursuing • Expected 2028
+            </span>
+            <h3 class="font-bold text-base text-white">Master of Computer Applications (MCA)</h3>
+            <p class="text-xs sm:text-sm text-sky-300 font-medium mt-1">
+              Artificial Intelligence & Data Science
+            </p>
+          </div>
+          <p class="text-xs text-slate-300 mt-4 pt-3 border-t border-white/10">
+            <i class="fa-solid fa-building-columns mr-1.5 text-sky-300"></i>Medicaps University
+          </p>
+        </div>
+
+        <div class="spatial-subpanel p-5 flex flex-col justify-between">
+          <div>
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px] font-mono inline-block mb-3 text-emerald-200">
+              2026 • 6.3 CGPA
+            </span>
+            <h3 class="font-bold text-base text-white">M.Sc. Mathematics</h3>
+            <p class="text-xs sm:text-sm text-slate-300 mt-1">
+              Postgraduate Analytical & Mathematical Foundation
+            </p>
+          </div>
+          <p class="text-xs text-slate-300 mt-4 pt-3 border-t border-white/10">
+            <i class="fa-solid fa-building-columns mr-1.5 text-emerald-300"></i>Jiwaji University
+          </p>
+        </div>
+
+        <div class="spatial-subpanel p-5 flex flex-col justify-between">
+          <div>
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px] font-mono inline-block mb-3 text-purple-200">
+              Graduated 2023
+            </span>
+            <h3 class="font-bold text-base text-white">Bachelor of Science (B.Sc.)</h3>
+            <p class="text-xs sm:text-sm text-slate-300 mt-1">
+              Undergraduate Science & Core Mathematics
+            </p>
+          </div>
+          <p class="text-xs text-slate-300 mt-4 pt-3 border-t border-white/10">
+            <i class="fa-solid fa-award mr-1.5 text-purple-300"></i>Class of 2023
+          </p>
+        </div>
+
+        <div class="spatial-subpanel p-5 flex flex-col justify-between">
+          <div>
+            <span class="spatial-pill px-2.5 py-0.5 text-[11px] font-mono inline-block mb-3 text-amber-200">
+              2020 & 2018
+            </span>
+            <h3 class="font-bold text-base text-white">Class XII & Class X</h3>
+            <p class="text-xs sm:text-sm text-slate-300 mt-1">
+              Higher Secondary (2020) • High School (2018)
+            </p>
+          </div>
+          <p class="text-xs text-slate-300 mt-4 pt-3 border-t border-white/10">
+            <i class="fa-solid fa-school mr-1.5 text-amber-300"></i>Schooling Foundation
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+
+    function openWorkImage(img) {
+      const lightbox = document.getElementById('work-lightbox');
+      const preview = document.getElementById('work-lightbox-image');
+      if (!img || !lightbox || !preview) return;
+      preview.src = img.src;
+      preview.alt = img.alt || 'Expanded project screenshot';
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeWorkImage() {
+      const lightbox = document.getElementById('work-lightbox');
+      const preview = document.getElementById('work-lightbox-image');
+      if (lightbox) lightbox.classList.remove('open');
+      if (preview) preview.src = '';
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') closeWorkImage();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const savedRealPhoto = localStorage.getItem('gaurav_permanent_real_photo_v1');
+        if (savedRealPhoto) {
+          const mainPhoto = document.getElementById('main-profile-photo');
+          if (mainPhoto) {
+            mainPhoto.onerror = null;
+            mainPhoto.src = savedRealPhoto;
+          }
+        }
+      } catch (e) {}
+
+      window.addEventListener('dragover', (e) => e.preventDefault());
+      window.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+          applyAndSaveRealPhoto(e.dataTransfer.files[0]);
+        }
+      });
+
+      autoCycleSpatialEnvironment();
+      renderLeetCodeHeatmap();
+
+      const windows = document.querySelectorAll('.spatial-window');
+      window.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.innerWidth) * 100;
+        const y = (e.clientY / window.innerHeight) * 100;
+        windows.forEach(win => {
+          win.style.setProperty('--mouse-x', x + '%');
+          win.style.setProperty('--mouse-y', y + '%');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
